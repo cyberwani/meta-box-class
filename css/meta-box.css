@@ -1,0 +1,34 @@
+/**
+ * Custom Meta Box Class CSS
+ *
+ * CSS used for the custom metaboxes and other form items.
+ *
+ * Copyright 2011 Cory Crowley (cory.ivan@gmail.com)
+ */
+
+/* =Common Rules for all fields.
+----------------------------------------------- */
+.cc-label { width: 20%; }
+
+/* =Select Fields
+----------------------------------------------- */
+.cc-select { height: auto !important; }
+
+/* =Uploaded Images
+----------------------------------------------- */
+.cc-images li { margin: 0 10px 10px 0; float: left; width: 150px; height: 100px; text-align: center; border: 3px solid #ccc; cursor: move; position: relative; }
+.cc-images img { width: 150px; height: 100px; }
+.cc-images a { position: absolute; bottom: 0; right: 0; color: #fff; background: #000; font-weight: bold; padding: 5px; }
+
+/* =Upload Button
+----------------------------------------------- */
+.cc-upload-button { float: left; clear: both; margin-top: 10px; }
+ 
+/* =Time Picker
+----------------------------------------------- */
+.ui-timepicker-div { font-size: 0.9em; }
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { height: 25px; }
+.ui-timepicker-div dl dd { margin: -25px 0 10px 65px; }
+.ui-timepicker-div td { font-size: 90%; }
