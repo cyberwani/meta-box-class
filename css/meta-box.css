@@ -8,21 +8,38 @@
 
 /* =Common Rules for all fields.
 ----------------------------------------------- */
-.cc-label { width: 20%; }
+.form-table td.cc-field{ border: 1px solid #DDD; padding: 10px 10px 20px; margin: 0px; font-family: "HelveticaNeue-Light","Helvetica Neue Light","Helvetica Neue", Helvetica, Arial, sans-serif; }
+.cc-label { margin: 0 0 5px 0; padding: 5px 0 0 0; 
+						font: 20px/31px "HelveticaNeue-Light","Helvetica Neue Light","Helvetica Neue", Helvetica, Arial, sans-serif; 
+						text-shadow: rgba(255, 255, 255, 1) 0 1px 0; width: auto; }
+.cc-radio-label{ padding-right: 10px; }				
+.cc-file-upload-label{ clear: both; margin: 5px 0px 5px 1px; }	
 
-/* =Select Fields
+
+/* =Form Fields
 ----------------------------------------------- */
-.cc-select { height: auto !important; }
+.postbox .cc-field input,
+.postbox .cc-field textarea { padding: 5px; line-height: 18px; } 
+.postbox .cc-field input.cc-radio{}
+.postbox .cc-field input.cc-color{ border: 0px; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; margin-right: 10px; min-width: 100px; }
+.cc-field input:focus, 
+.cc-field textarea:focus { background: #fffff8; }
+#wpcontent select.cc-select { height: 30px !important; padding: 10px; display: block; min-width: 200px; }
+.cc-field .desc-field { color: #AAA; font-style: italic; margin: 5px 0 0 3px !important; font-size: 13px; }
+.cc-field .wp_themeSkin table.mceLayout{ border: 1px solid #DFDFDF; }
+#post-body .cc-field .wp_themeSkin .mceStatusbar a.mceResize{ top: -25px; } 
 
 /* =Uploaded Images
 ----------------------------------------------- */
-.cc-images li { margin: 0 10px 10px 0; float: left; width: 150px; height: 100px; text-align: center; border: 3px solid #ccc; cursor: move; position: relative; }
-.cc-images img { width: 150px; height: 100px; }
-.cc-images a { position: absolute; bottom: 0; right: 0; color: #fff; background: #000; font-weight: bold; padding: 5px; }
+.cc-images li { margin: 5px 10px 0px 0; float: left; width: 150px; height: 150px; text-align: center; border: 3px solid #ccc; cursor: move; position: relative; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; }
+.cc-images img { width: 150px; height: 150px; }
+.cc-images a { position: absolute; top: -12px; right: -12px; color: #fff;  font-weight: bold; padding: 5px; }
+.cc-images .cc-delete-file img{ width: 16px; height: 16px; }
 
 /* =Upload Button
 ----------------------------------------------- */
 .cc-upload-button { float: left; clear: both; margin-top: 10px; }
+.cc-add-file { float: left; clear: both; margin-top: 10px; }
  
 /* =Time Picker
 ----------------------------------------------- */

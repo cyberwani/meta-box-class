@@ -73,10 +73,11 @@ class CC_Meta_Box {
 		// Assign meta box values to local variables and add it's missed values.
 		$this->_meta_box = $meta_box;
 		$this->_fields = &$this->_meta_box['fields'];
+		$this->add_missed_values();
 		
 		// Add Actions
 		add_action( 'add_meta_boxes', array( &$this, 'add' ) );
-		add_action( 'save_post', array( &$this, 'save' ) );
+		add_action( 'wp_insert_post', array( &$this, 'save' ) );
 		
 		// Check for special fields and add needed actions for them.
 		$this->check_field_upload();
@@ -99,7 +100,7 @@ class CC_Meta_Box {
 	public function load_scripts_styles() {
 		
 		// Get Plugin Path
-		$plugin_path = plugins_url( '', dirname( __FILE__ ) );
+		$plugin_path = plugins_url( 'meta-box-class', plugin_basename( dirname( __FILE__ ) ) );
 		
 		// Enqueue Meta Box Style
 		wp_enqueue_style( 'cc-meta-box', $plugin_path . '/css/meta-box.css' );
@@ -118,7 +119,7 @@ class CC_Meta_Box {
 	public function check_field_upload() {
 		
 		// Check if the field is an image or file. If not, return.
-		if ( ! $this->had_field( 'image' ) && ! $this->has_field( 'file' ) )
+		if ( ! $this->has_field( 'image' ) && ! $this->has_field( 'file' ) )
 			return;
 		
 		// Add data encoding type for file uploading.	
@@ -185,10 +186,11 @@ class CC_Meta_Box {
 			// If not selected or url is empty, continue in loop.
 			if ( empty( $attachment['selected'] ) || empty( $attachment['url'] ) )
 				continue;
-			
-			$li 	 = "<li id='item_{$attachment_id}'";
-			$li 	.= "<img src='{$attachment['url']}' />";
-			$li 	.= "<a title='" . __( 'Delete this image' ) . "' class='cc-delete-file' href='#' rel='{$nonce}|{$post_id}|{$id}|{$attachment_id}'>" . __( 'Delete' ) . "</a>";
+				
+			$li 	 = "<li id='item_{$attachment_id}'>";
+			$li 	.= "<img src='{$attachment['url']}' alt='image_{$attachment_id}' />";
+			//$li 	.= "<a title='" . __( 'Delete this image' ) . "' class='cc-delete-file' href='#' rel='{$nonce}|{$post_id}|{$id}|{$attachment_id}'>" . __( 'Delete' ) . "</a>";
+			$li 	.= "<a title='" . __( 'Delete this image' ) . "' class='cc-delete-file' href='#' rel='{$nonce}|{$post_id}|{$id}|{$attachment_id}'><img src='" . plugins_url( 'meta-box-class/images/delete-16.png' , dirname( __FILE__ ) ) . "' alt='" . __( 'Delete' ) . "' /></a>";
 			$li 	.= "<input type='hidden' name='{$id}[]' value='{$attachment_id}' />";
 			$li 	.= "</li>";
 			$html .= $li;
@@ -235,7 +237,7 @@ class CC_Meta_Box {
 		if ( ! isset( $_POST['data'] ) )
 			die();
 			
-		list ( $order, $post_id, $key, $nonce ) = explod( '|', $_POST['data'] );
+		list($nonce, $post_id, $key, $attach_id) = explode('|', $_POST['data']);
 		
 		if ( ! wp_verify_nonce( $nonce, 'cc_ajax_delete' ) )
 			die( '1' );
@@ -358,6 +360,7 @@ class CC_Meta_Box {
 			$meta = get_post_meta( $post->ID, $field['id'], !$field['multiple'] );
 			$meta = ( $meta !== '' ) ? $meta : $field['std'];
 			
+			
 			$meta = is_array( $meta ) ? array_map( 'esc_attr', $meta ) : esc_attr( $meta );
 			
 			echo '<tr>';
@@ -381,10 +384,15 @@ class CC_Meta_Box {
 	 * @access public
 	 */
 	public function show_field_begin( $field, $meta ) {
-		echo "<th class='cc-label'>";
-			echo "<label for='{$field['id']}'>{$field['name']}</label>";
-		echo "</th>";
+		
 		echo "<td class='cc-field'>";
+		
+		if ( $field['name'] != '' || $field['name'] != FALSE ) {
+			echo "<div class='cc-label'>";
+				echo "<label for='{$field['id']}'>{$field['name']}</label>";
+			echo "</div>";
+		}
+		
 	}
 	
 	/**
@@ -396,7 +404,13 @@ class CC_Meta_Box {
 	 * @access public 
 	 */
 	public function show_field_end( $field, $meta ) {
-		echo "<br />{$field['desc']}</td>";
+		
+		if ( $field['desc'] != '' ) {
+			echo "<div class='desc-field'>{$field['desc']}</div></td>";
+		} else {
+			echo "</td>";
+		}
+		
 	}
 	
 	/**
@@ -459,9 +473,13 @@ class CC_Meta_Box {
 	 * @access public 
 	 */
 	public function show_field_radio( $field, $meta ) {
+		
+		if ( ! is_array( $meta ) )
+			$meta = (array) $meta;
+			
 		$this->show_field_begin( $field, $meta );
 			foreach ( $field['options'] as $key => $value ) {
-				echo "<input type='radio' class='cc-radio' name='{$field['id']}' value='{$key}'" . checked( $meta, $key, false ) . " /> {$value} ";
+				echo "<input type='radio' class='cc-radio' name='{$field['id']}' value='{$key}'" . checked( in_array( $key, $meta ), true, false ) . " /> <span class='cc-radio-label'>{$value}</span>";
 			}
 		$this->show_field_end( $field, $meta );
 	}
@@ -475,8 +493,10 @@ class CC_Meta_Box {
 	 * @access public
 	 */
 	public function show_field_checkbox( $field, $meta ) {
-		$this->show_field_begin( $field, $meta );
-			echo "<input type='checkbox' class='cc-checkbox' name='{$field['id']}' id='{$field['id']}'" . checked( ! empty( $meta ), true, false ) . " /> {$field['desc']}</td>";
+	
+		$this->show_field_begin($field, $meta);
+		echo "<input type='checkbox' class='rw-checkbox' name='{$field['id']}' id='{$field['id']}'" . checked(!empty($meta), true, false) . " /> {$field['desc']}</td>";
+			
 	}
 	
 	/**
@@ -523,14 +543,14 @@ class CC_Meta_Box {
 			}
 
 			// show form upload
-			echo "<div style='clear: both'>";
+			echo "<div class='cc-file-upload-label'>";
 				echo "<strong>" . __( 'Upload new files' ) . "</strong>";
 			echo "</div>";
 			echo "<div class='new-files'>";
 				echo "<div class='file-input'>";
 					echo "<input type='file' name='{$field['id']}[]' />";
 				echo "</div><!-- End .file-input -->";
-				echo "<a class='cc-add-file' href='#'>" . __( 'Add more file' ) . "</a>";
+				echo "<a class='cc-add-file button' href='#'>" . __( 'Add more files' ) . "</a>";
 			echo "</div><!-- End .new-files -->";
 		echo "</td>";
 	}
@@ -551,7 +571,8 @@ class CC_Meta_Box {
 			$meta = (array) $meta;
 
 		$this->show_field_begin( $field, $meta );
-			echo "{$field['desc']}<br />";
+		
+		echo "{$field['desc']}<br />";
 
 		$nonce_delete = wp_create_nonce( 'cc_ajax_delete' );
 		$nonce_sort = wp_create_nonce( 'cc_ajax_reorder' );
@@ -560,12 +581,12 @@ class CC_Meta_Box {
 		echo "<ul class='cc-images cc-upload' id='cc-images-{$field['id']}'>";
 
 		// re-arrange images with 'menu_order', thanks Onur
-		$meta = implode( ',', $meta );
+		$meta = ($meta) ? implode( ',', $meta ) : 1;
 		$images = $wpdb->get_col("
 			SELECT ID FROM $wpdb->posts
 			WHERE post_type = 'attachment'
 			AND post_parent = $post->ID
-			AND ID in ({$meta})
+			AND ID in ($meta)
 			ORDER BY menu_order ASC
 		");
 		
@@ -574,8 +595,9 @@ class CC_Meta_Box {
 			$src = $src[0];
 
 			echo "<li id='item_{$image}'>";
-				echo "<img src='{$src}' />";
-				echo "<a title='" . __( 'Delete this image' ) . "' class='cc-delete-file' href='#' rel='{$nonce_delete}|{$post->ID}|{$field['id']}|{$image}'>" . __( 'Delete' ) . "</a>";
+				echo "<img src='{$src}' alt='image_{$image}' />";
+				echo "<a title='" . __( 'Delete this image' ) . "' class='cc-delete-file' href='#' rel='{$nonce_delete}|{$post->ID}|{$field['id']}|{$image}'><img src='" . plugins_url( 'meta-box-class/images/delete-16.png' , dirname( __FILE__ ) ) . "' alt='" . __( 'Delete' ) . "' width='16' height='16' /></a>";
+				//echo "<a title='" . __( 'Delete this image' ) . "' class='cc-delete-file' href='#' rel='{$nonce_delete}|{$post->ID}|{$field['id']}|{$image}'>" . __( 'Delete' ) . "</a>";
 				echo "<input type='hidden' name='{$field['id']}[]' value='{$image}' />";
 			echo "</li>";
 		}
@@ -600,7 +622,7 @@ class CC_Meta_Box {
 			
 		$this->show_field_begin( $field, $meta );
 			echo "<input class='cc-color' type='text' name='{$field['id']}' id='{$field['id']}' value='{$meta}' size='8' />";
-			echo "<a href='#' class='cc-color-select' rel='{$field['id']}'>" . __( 'Select a color' ) . "</a>";
+			echo "<a href='#' class='cc-color-select button' rel='{$field['id']}'>" . __( 'Select a color' ) . "</a>";
 			echo "<div style='display:none' class='cc-color-picker' rel='{$field['id']}'></div>";
 		$this->show_field_end($field, $meta);
 		
@@ -687,8 +709,9 @@ class CC_Meta_Box {
 			
 			$name = $field['id'];
 			$type = $field['type'];
-			$old = get_post_meta( $post_id, $name, !$field['multiple'] );
-			$new = isset( $_POST[$name] ) ? $_POST[$name] : ( $field['multiple'] ? array() : '' );
+			$old = get_post_meta( $post_id, $name, ! $field['multiple'] );
+			$new = ( isset( $_POST[$name] ) ) ? $_POST[$name] : ( ( $field['multiple'] ) ? array() : '' );
+			
 
 			// Validate meta value
 			if ( class_exists( 'CC_Meta_Box_Validate' ) && method_exists( 'CC_Meta_Box_Validate', $field['validate_func'] ) ) {
@@ -839,7 +862,6 @@ class CC_Meta_Box {
 		return false;
 	}
 
-	// Check if current page is edit page
 	/**
 	 * Check if current page is edit page.
 	 *
@@ -859,7 +881,6 @@ class CC_Meta_Box {
 	 * to
 	 * The More standard and appropriate:
 	 * $_FILES['field']['index']['key']
-	 * 
 	 *
 	 * @param string $files 
 	 * @since 1.0

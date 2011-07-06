@@ -111,22 +111,23 @@ jQuery(document).ready(function($) {
 		});
 		
 	});
-
+	
 	/**
 	 * Thickbox Upload
 	 *
 	 * @since 1.0
 	 */
 	$('.cc-upload-button').click( function() {
+		
 		var data 			= $(this).attr('rel').split('|'),
 				post_id 	= data[0],
 				field_id 	= data[1],
 				backup 		= window.send_to_editor; // backup the original 'send_to_editor' function which adds images to the editor
-
+				
 		// change the function to make it adds images to our section of uploaded images
 		window.send_to_editor = function(html) {
 			
-			$('#cc-images-' + field_id).append($(html));
+			$('#cc-images-' + field_id).append( $(html) );
 
 			tb_remove();
 			
@@ -174,20 +175,21 @@ jQuery(document).ready(function($) {
 	 *
 	 * @since 1.0
 	 */
-	var field_id = get_query_var('field_id');
+	var field_id = get_query_var( 'field_id' );
 	$('.ml-submit:first').append('<input type="hidden" name="field_id" value="' + field_id + '" /> <input type="submit" class="button" name="cc-insert" value="Insert selected images" />');
 
 	/**
 	 * Helper Function
 	 *
-	 * Get Query string value by name, http://goo.gl/r0CHS
+	 * Get Query string value by name.
 	 *
 	 * @since 1.0
 	 */
 	function get_query_var( name ) {
-		var match = RegExp('[?&]' + name + '=([^&#]*)').exec(location.href);
 
+		var match = RegExp('[?&]' + name + '=([^&#]*)').exec(location.href);
 		return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+			
 	}
 
 });
